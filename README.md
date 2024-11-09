@@ -8,7 +8,7 @@ python main.py
 
 ## Examples
 
-Check the `examples/` directory for sample files and expected outputs.
+Check the `example data` directory for sample files and expected outputs.
 
 ## Usage
 
