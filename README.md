@@ -2,6 +2,7 @@
 Clone the repository
 Install requirements
 pip install -r requirements.txt
+
 Copy example environment file
 cp .env.example .env.local
 Edit .env.local with your credentials
