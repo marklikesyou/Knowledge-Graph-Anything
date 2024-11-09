@@ -1,0 +1,9 @@
+python-dotenv
+openai
+langchain
+neo4j
+networkx
+matplotlib
+numpy
+PyPDF2
+python-docx
