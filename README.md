@@ -46,11 +46,71 @@ Check the `example data` directory for sample files and expected outputs.
    - Relationships are created between nodes
    - Properties and context are stored with both nodes and relationships
 
-4. **Visualization**
-   - Creates an interactive visualization using NetworkX and Matplotlib
-   - Different node types are color-coded
-   - Relationships are shown as labeled arrows
-   - Includes a legend for entity types
+## Visualization in Neo4j Browser
+
+After running the script, you can visualize your knowledge graph using Neo4j Browser:
+
+1. **Access Neo4j Browser**
+   - If using Neo4j Aura:
+     - Log into [Neo4j Aura Console]
+     - Click on your database
+     - Go on your "Query" tab, you should see the extracted nodes being uploaded there
+
+
+2. **Basic Visualization Query**
+   Copy and paste this query to visualize your graph:
+   MATCH (n)-[r]->(m)
+   RETURN DISTINCT
+       LABELS(n)[0] + 
+       CASE 
+           WHEN n.name IS NOT NULL THEN '\n' + n.name
+           ELSE ''
+       END as source_label,
+       
+       LABELS(m)[0] + 
+       CASE 
+           WHEN m.name IS NOT NULL THEN '\n' + m.name
+           ELSE ''
+       END as target_label,
+       
+       TYPE(r) as relationship_label,
+       
+       n, r, m
+   LIMIT 25;
+
+
+3. **Interact with the Graph**
+   - Zoom: Mouse wheel
+   - Pan: Click and drag
+   - Move nodes: Click and drag nodes
+   - Expand nodes: Double-click
+   - Select multiple: Shift + click
+   - Reset view: Double-click background
+
+4. **Additional Statistics Query**
+
+   CALL {
+       MATCH (n) RETURN COUNT(n) as node_count
+   }
+   CALL {
+       MATCH ()-[r]->() RETURN COUNT(r) as rel_count
+   }
+   CALL {
+       MATCH (n) 
+       WITH LABELS(n) as label
+       RETURN COLLECT(DISTINCT label) as node_types
+   }
+   CALL {
+       MATCH ()-[r]->() 
+       WITH TYPE(r) as type
+       RETURN COLLECT(DISTINCT type) as rel_types
+   }
+   RETURN 
+       node_count as "Total Nodes",
+       rel_count as "Total Relationships",
+       node_types as "Node Types",
+       rel_types as "Relationship Types";
+
 
 ## Customization
 
