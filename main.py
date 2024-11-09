@@ -5,10 +5,6 @@ from langchain.graphs import Neo4jGraph
 from langchain.graphs.graph_document import GraphDocument
 from langchain.document_loaders import TextLoader
 from langchain_experimental.graph_transformers.llm import LLMGraphTransformer
-import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
-import textwrap
 import io
 import PyPDF2
 import docx
@@ -28,7 +24,7 @@ class KnowledgeGraphAnything:
         custom_schema=None,
     ):
         self.llm = ChatOpenAI(
-            model="gpt-4o",
+            model="gpt-4-0125-preview",
             openai_api_key=os.getenv("OPENAI_API_KEY"),
             temperature=0,
         )
@@ -157,17 +153,6 @@ class KnowledgeGraphAnything:
                 "relationship_types": [],
             }
 
-    def get_graph_visualization(self):
-        try:
-            query = """
-            MATCH (n)-[r]->(m)
-            RETURN n, r, m
-            LIMIT 25
-            """
-            return self.graph.query(query)
-        except Exception:
-            return []
-
 
 def get_custom_schema():
     response = input(
@@ -186,123 +171,6 @@ def get_custom_schema():
         return "\n".join(lines)
 
     return None
-
-
-def visualize_graph(kg_builder):
-    query = """
-    MATCH (n)-[r]->(m)
-    RETURN 
-        LABELS(n) as source_labels,
-        PROPERTIES(n) as source_props,
-        TYPE(r) as relationship_type,
-        PROPERTIES(r) as relationship_props,
-        LABELS(m) as target_labels,
-        PROPERTIES(m) as target_props,
-        n, r, m
-    LIMIT 50
-    """
-
-    try:
-        graph_data = kg_builder.graph.query(query)
-        G = nx.DiGraph()
-        nodes_added = set()
-
-        for record in graph_data:
-
-            def create_node_label(labels, props):
-                type_label = labels[0] if labels else "Unknown"
-                name = props.get("name", "")
-                description = props.get("description", "")
-                if description:
-                    description = textwrap.fill(
-                        description[:100] + ("..." if len(description) > 100 else ""),
-                        width=30,
-                    )
-                return f"{type_label}\n{name}\n{description if description else ''}"
-
-            source_label = create_node_label(
-                record["source_labels"], record["source_props"]
-            )
-            target_label = create_node_label(
-                record["target_labels"], record["target_props"]
-            )
-
-            rel_type = record["relationship_type"]
-            rel_props = record["relationship_props"]
-            context = rel_props.get("context", "")
-            if context:
-                context = textwrap.fill(
-                    context[:50] + ("..." if len(context) > 50 else ""), width=20
-                )
-                edge_label = f"{rel_type}\n{context}"
-            else:
-                edge_label = rel_type
-
-            if source_label not in nodes_added:
-                G.add_node(source_label, type=record["source_labels"][0])
-                nodes_added.add(source_label)
-            if target_label not in nodes_added:
-                G.add_node(target_label, type=record["target_labels"][0])
-                nodes_added.add(target_label)
-
-            G.add_edge(source_label, target_label, label=edge_label)
-
-        if len(G.nodes()) == 0:
-            return
-
-        node_types = sorted(set(nx.get_node_attributes(G, "type").values()))
-        color_map = plt.cm.get_cmap("tab20")(np.linspace(0, 1, len(node_types)))
-        type_to_color = dict(zip(node_types, color_map))
-        node_colors = [type_to_color[G.nodes[node]["type"]] for node in G.nodes()]
-
-        plt.figure(figsize=(24, 18))
-        pos = nx.spring_layout(G, k=2, iterations=100)
-
-        nx.draw_networkx_nodes(
-            G, pos, node_size=4000, node_color=node_colors, alpha=0.7
-        )
-        nx.draw_networkx_edges(
-            G,
-            pos,
-            edge_color="gray",
-            arrows=True,
-            arrowsize=20,
-            connectionstyle="arc3,rad=0.2",
-        )
-        nx.draw_networkx_labels(
-            G, pos, font_size=8, font_weight="bold", verticalalignment="center"
-        )
-
-        edge_labels = nx.get_edge_attributes(G, "label")
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=7)
-
-        plt.title("Knowledge Graph", pad=20, size=16)
-        plt.axis("off")
-
-        legend_elements = [
-            plt.Line2D(
-                [0],
-                [0],
-                marker="o",
-                color="w",
-                markerfacecolor=type_to_color[node_type],
-                markersize=10,
-                label=node_type,
-            )
-            for node_type in node_types
-        ]
-        plt.legend(
-            handles=legend_elements,
-            loc="center left",
-            bbox_to_anchor=(1, 0.5),
-            title="Entity Types",
-        )
-
-        plt.tight_layout()
-        plt.show()
-
-    except Exception:
-        return
 
 
 async def main():
@@ -351,7 +219,9 @@ async def main():
     print("\nNode Types:", stats["node_types"])
     print("Relationship Types:", stats["relationship_types"])
 
-    visualize_graph(kg_builder)
+    print(
+        "\nGraph creation complete! You can now view and query your knowledge graph in the Neo4j Browser."
+    )
     return kg_builder, results
 
 
