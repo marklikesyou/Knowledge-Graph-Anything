@@ -1,8 +1,5 @@
 ## Quick Start
 Clone the repository
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-Navigate to the project directory
-cd YOUR_REPO_NAME
 Install requirements
 pip install -r requirements.txt
 Copy example environment file
