@@ -86,5 +86,4 @@ Common issues:
 Feel free to:
 - Report issues
 - Suggest improvements
-- Submit pull requests
 
