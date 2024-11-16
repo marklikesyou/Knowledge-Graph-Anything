@@ -10,7 +10,6 @@ import PyPDF2
 import docx
 from langchain.schema import Document
 
-# Load environment variables
 load_dotenv(".env.local")
 
 
@@ -24,7 +23,7 @@ class KnowledgeGraphAnything:
         custom_schema=None,
     ):
         self.llm = ChatOpenAI(
-            model="gpt-4-0125-preview",
+            model="gpt-4o",
             openai_api_key=os.getenv("OPENAI_API_KEY"),
             temperature=0,
         )
@@ -183,7 +182,7 @@ async def main():
         custom_schema=custom_schema,
     )
 
-    # Read files from example_data directory
+    
     example_data_path = "./example data"
     if not os.path.exists(example_data_path):
         print(f"Error: {example_data_path} directory not found")
